@@ -27,7 +27,6 @@ export default function HeartRatePage() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#bee6ce] to-[#bcffdb]">
-      <Sidebar />
 
       <main className="flex-1 p-8">
         <div className="max-w-5xl mx-auto">

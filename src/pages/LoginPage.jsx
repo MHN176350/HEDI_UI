@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { Activity, Mail, Lock } from "lucide-react";
 
 export default function LoginPage() {
@@ -71,6 +71,15 @@ export default function LoginPage() {
             Login
           </button>
         </form>
+
+        <div className="mt-6">
+          <button
+            type="button"
+            className="w-full py-3 bg-white text-[#4f9d69] border-2 border-[#4f9d69] rounded-lg hover:bg-[#bcffdb] transition-colors"
+          >
+            Login with Google
+          </button>
+        </div>
 
         <p className="text-center mt-6 text-gray-600">
           Don't have an account?{" "}

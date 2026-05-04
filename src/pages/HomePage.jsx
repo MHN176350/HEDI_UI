@@ -5,7 +5,6 @@ import { Activity, Heart, TrendingUp, Shield } from "lucide-react";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#bee6ce] to-[#bcffdb]">
-      <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 py-16">
         <div className="text-center mb-16">
