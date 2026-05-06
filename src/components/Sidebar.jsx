@@ -42,7 +42,6 @@ export default function Sidebar({ isOpen, closeSidebar }) {
 
   return (
     <>
-      {/* Mobile Dark Overlay */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
@@ -50,10 +49,6 @@ export default function Sidebar({ isOpen, closeSidebar }) {
         />
       )}
 
-      {/* Responsive Sidebar:
-        - Mobile: fixed, full height, slides in/out.
-        - Desktop: sticky under Navbar, height calc'd minus Navbar, static.
-      */}
       <aside 
        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-[#bee6ce] to-[#a8dfc5] p-4 shadow-2xl transition-transform duration-300 ease-in-out 
         md:relative md:h-full md:shadow-[4px_0_24px_rgba(0,0,0,0.05)] md:translate-x-0 md:z-10
@@ -73,7 +68,6 @@ export default function Sidebar({ isOpen, closeSidebar }) {
                 <Settings className="w-5 h-5 text-[#4f9d69] group-hover:rotate-90 transition-transform duration-300" />
               </button>
               
-              {/* Close Button (Mobile Only) */}
               <button 
                 onClick={closeSidebar}
                 className="md:hidden p-2 hover:bg-[#bcffdb] rounded-lg transition-colors"
@@ -83,7 +77,6 @@ export default function Sidebar({ isOpen, closeSidebar }) {
             </div>
           </div>
 
-          {/* Scrollable Links Container */}
           <div className="overflow-y-auto custom-scrollbar flex-1 pb-6">
             <Link
               to="/dashboard"
@@ -129,7 +122,6 @@ export default function Sidebar({ isOpen, closeSidebar }) {
         </div>
       </aside>
 
-      {/* Settings Popup */}
       {isSettingsOpen && (
         <SettingsPopup 
           onClose={() => setIsSettingsOpen(false)} 
