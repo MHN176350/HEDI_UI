@@ -52,6 +52,10 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const response = await authService.register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password
       });
 
       if (response.status === "SUCCESS") {

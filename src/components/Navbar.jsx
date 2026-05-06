@@ -7,7 +7,6 @@ export default function Navbar() {
   const navigate = useNavigate();
  const token = Cookies.get("token");
   const handleLogout = async () => {
-    debugger;
     const userId = Cookies.get("userId");
     
     if (userId) {

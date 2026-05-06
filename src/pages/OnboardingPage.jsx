@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Activity, ArrowRight, ArrowLeft, CheckCircle2, HeartPulse, Loader2, AlertCircle } from "lucide-react";
 import { apiService } from "../services/apiService";
-import { useApi } from "../hooks/useApi"; // <-- Import the new hook
+import { useApi } from "../hooks/useApi";
+import Cookies from 'js-cookie';
 
 const formatName = (name) => {
   return name.replace(/_/g, ' ').replace(/\w\S*/g, (txt) => {
@@ -27,9 +28,8 @@ export default function OnboardingPage() {
   const [selectedMetrics, setSelectedMetrics] = useState([]);
   const [formData, setFormData] = useState({});
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = Cookies.get("userId");
 
-  // Setup our API hooks
   const { execute: fetchMetrics, loading: loadingMetrics } = useApi(apiService.getMetrics);
   const { execute: saveThresholds, loading: isSaving, error: saveError } = useApi(apiService.saveThresholds);
 
@@ -77,7 +77,7 @@ export default function OnboardingPage() {
     }));
 
     try {
-      // Execute the save hook
+      
       const res = await saveThresholds(userId, payload);
       
       if (res?.status === "SUCCESS") {
@@ -85,7 +85,6 @@ export default function OnboardingPage() {
       }
     } catch (err) {
       console.log("Threshold save failed", err);
-      // The error state is automatically captured by the 'saveError' variable from the hook
     }
   };
 

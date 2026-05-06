@@ -25,14 +25,14 @@ export default function LoginPage() {
         
         Cookies.set("token", response.data.token, { expires: 1 });
         Cookies.set("userId", response.data.userId, { expires: 1 });
-
+        debugger;
         if (response.data.first === true) {
           navigate("/onboarding");
         } else {
           navigate("/dashboard");
         }
       } else {
-        setError(response?.message || "Invalid credentials");
+        setError(response?.data || "Invalid credentials");
       }
     } catch (err) {
       setError("Cannot connect to server. Please try again later.");
