@@ -6,7 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import HealthMetricsPage from "./pages/HealthMetricsPage";
-import HeartRatePage from "./pages/HeartRatePage";
+import MetricDetailPage from "./pages/MetricDetailPage";
 import OnboardingPage from "./pages/OnboardingPage";
 
 function AppContent() {
@@ -20,13 +20,12 @@ function AppContent() {
         {!isAuthPage && <Sidebar />}
         <div className={isAuthPage ? "w-full" : "flex-1 mr-0 mb-0 ml-1 pt-0"}>
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/metrics" element={<HealthMetricsPage />} />
-            <Route path="/heart-rate" element={<HeartRatePage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
+           <Route path="/" element={<HomePage />} />
+    <Route path="/login" element={<LoginPage />} />
+    <Route path="/register" element={<RegisterPage />} />
+    <Route path="/dashboard" element={<DashboardPage />} />
+    <Route path="/onboarding" element={<OnboardingPage />} />
+    <Route path="/metric/:metricName" element={<MetricDetailPage />} />
           </Routes>
         </div>
       </div>
