@@ -11,16 +11,6 @@ const formatName = (name) => {
   });
 };
 
-const getMetricImage = (metricName) => {
-  const images = {
-    BLOOD_SUGAR: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=500&auto=format&fit=crop&q=60",
-    BLOOD_PRESSURE_SYSTOLIC: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?w=500&auto=format&fit=crop&q=60",
-    BLOOD_PRESSURE_DIASTOLIC: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=500&auto=format&fit=crop&q=60",
-    HEART_RATE: "https://images.unsplash.com/photo-1505503693641-1926193e8d57?w=500&auto=format&fit=crop&q=60",
-    SpO2_LEVEL: "https://images.unsplash.com/photo-1584308666744-24d59b298b17?w=500&auto=format&fit=crop&q=60"
-  };
-  return images[metricName] || "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=500&auto=format&fit=crop&q=60";
-};
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(1);
@@ -56,6 +46,7 @@ export default function OnboardingPage() {
         : [...prev, metric]
     );
   };
+  
 
   const handleInputChange = (metricId, field, value) => {
     setFormData(prev => ({
@@ -173,7 +164,7 @@ export default function OnboardingPage() {
 
                         <div className="h-32 w-full overflow-hidden">
                           <img 
-                            src={getMetricImage(metric.name)} 
+                            src={metric.imgUrl} 
                             alt={metric.name}
                             className={`w-full h-full object-cover transition-transform duration-500 ${isSelected ? 'scale-110 opacity-90' : 'group-hover:scale-105'}`}
                           />
@@ -227,7 +218,7 @@ export default function OnboardingPage() {
                     <div key={metric.id} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 flex flex-col sm:flex-row sm:items-center gap-4 hover:shadow-sm transition-shadow">
                       
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 hidden sm:block shadow-sm border border-gray-200">
-                         <img src={getMetricImage(metric.name)} alt="" className="w-full h-full object-cover" />
+                         <img src={metric.imgUrl} alt="" className="w-full h-full object-cover" />
                       </div>
                       
                       <div className="flex-1">
