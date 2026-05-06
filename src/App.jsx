@@ -1,6 +1,4 @@
-// import { BrowserRouter, RouterProvider } from "react-router";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { router } from "./routes";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import HomePage from "./pages/HomePage";
@@ -10,25 +8,34 @@ import DashboardPage from "./pages/DashboardPage";
 import HealthMetricsPage from "./pages/HealthMetricsPage";
 import HeartRatePage from "./pages/HeartRatePage";
 
+function AppContent() {
+  const location = useLocation();
+  const isAuthPage = ["/login", "/register"].includes(location.pathname);
+
+  return (
+    <>
+      {!isAuthPage && <Navbar />}
+      <div className={isAuthPage ? "" : "flex"}>
+        {!isAuthPage && <Sidebar />}
+        <div className={isAuthPage ? "w-full" : "flex-1 mr-0 mb-0 ml-1 pt-0"}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/metrics" element={<HealthMetricsPage />} />
+            <Route path="/heart-rate" element={<HeartRatePage />} />
+          </Routes>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function App() {
   return (
-    <div >
-      <BrowserRouter>
-        <Navbar />
-        <div className="flex">
-          <Sidebar />
-          <div className="flex-1 mr-0 mb-0 ml-1 pt-0">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/metrics" element={<HealthMetricsPage />} />
-              <Route path="/heart-rate" element={<HeartRatePage />} />
-            </Routes>
-          </div>
-        </div>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }

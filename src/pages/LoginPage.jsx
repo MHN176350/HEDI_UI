@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Activity, Mail, Lock } from "lucide-react";
+import { Activity, Mail, Lock, Loader2 } from "lucide-react";
 import { authService } from "../services/authService";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     
     try {
       const response = await authService.login({ email, password });
@@ -24,13 +26,14 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("Cannot connect to server. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // This handles the OAuth flow, matching your backend's OAuthUserInfo DTO[cite: 2]
   const handleOAuthLogin = async () => {
+    setLoading(true);
     try {
-      // NOTE: In a real app, you'd get this payload from your Google/GitHub Login Hook
       const mockOAuthPayload = {
         id: "google-123456789",
         email: "user@example.com",
@@ -49,69 +52,99 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("OAuth connection failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#bee6ce] to-[#bcffdb] flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="flex items-center justify-center mb-8">
-          <div className="w-16 h-16 bg-[#4f9d69] rounded-full flex items-center justify-center">
-            <Activity className="w-8 h-8 text-white" />
-          </div>
-        </div>
-        <h1 className="text-center text-[#4f9d69] mb-2">Welcome Back to HEDI</h1>
-        <p className="text-center text-gray-600 mb-6">Login to access your health dashboard</p>
-
-        {error && <div className="mb-4 p-3 bg-red-100 text-red-600 rounded-lg text-sm">{error}</div>}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-[#4f9d69] mb-2 text-sm">Email Address</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4f9d69]" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full pl-9 pr-4 py-3 bg-[#bcffdb] border-2 border-transparent rounded-lg focus:outline-none focus:border-[#4f9d69] transition-colors"
-                required
-              />
+    <div className="min-h-screen bg-gradient-to-br from-[#bee6ce] via-[#a8dfc5] to-[#bcffdb] flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#4f9d69] to-[#2d6a4f] rounded-full flex items-center justify-center shadow-lg">
+                <Activity className="w-7 h-7 text-white" />
+              </div>
             </div>
+            <h1 className="text-2xl font-bold text-[#4f9d69]">Welcome Back</h1>
+            <p className="text-gray-500 text-sm">Login to access your health dashboard</p>
           </div>
-          <div>
-            <label className="block text-[#4f9d69] mb-2 text-sm">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4f9d69]" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full pl-9 pr-4 py-3 bg-[#bcffdb] border-2 border-transparent rounded-lg focus:outline-none focus:border-[#4f9d69] transition-colors"
-                required
-              />
-            </div>
-          </div>
-          <button type="submit" className="w-full py-3 bg-[#4f9d69] text-white rounded-lg hover:bg-[#68d89b] transition-colors font-medium">
-            Login
-          </button>
-        </form>
 
-        <div className="mt-6">
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 text-sm flex items-start gap-2">
+              <span className="text-red-500 font-bold">!</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-[#4f9d69] font-medium mb-2 text-sm">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#4f9d69]" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-[#f0fdf4] to-[#bcffdb] border-2 border-transparent rounded-lg focus:outline-none focus:border-[#4f9d69] focus:bg-white transition-all"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[#4f9d69] font-medium mb-2 text-sm">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#4f9d69]" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 bg-gradient-to-r from-[#f0fdf4] to-[#bcffdb] border-2 border-transparent rounded-lg focus:outline-none focus:border-[#4f9d69] focus:bg-white transition-all"
+                  required
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full py-3 bg-gradient-to-r from-[#4f9d69] to-[#2d6a4f] text-white rounded-lg hover:from-[#3d7d54] hover:to-[#1f4d39] transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-75"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">Or continue with</span>
             </div>
           </div>
 
+          {/* OAuth Button */}
           <button 
             onClick={handleOAuthLogin}
-            className="mt-6 w-full py-3 border-2 border-[#4f9d69] text-[#4f9d69] bg-white rounded-lg hover:bg-[#bcffdb] transition-colors font-medium flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full py-3 border-2 border-[#4f9d69] text-[#4f9d69] bg-white rounded-lg hover:bg-[#f0fdf4] transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-75"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -121,11 +154,12 @@ export default function LoginPage() {
             </svg>
             Google
           </button>
-        </div>
 
-        <p className="text-center mt-6 text-gray-600 text-sm">
-          Don't have an account? <Link to="/register" className="text-[#4f9d69] hover:underline">Register here</Link>
-        </p>
+          {/* Register Link */}
+          <p className="text-center text-gray-600 text-sm">
+            Don't have an account? <Link to="/register" className="text-[#4f9d69] font-semibold hover:underline">Register here</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

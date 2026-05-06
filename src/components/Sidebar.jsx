@@ -1,5 +1,5 @@
-import { Link, useLocation } from "react-router";
-import { Home, Activity, Heart, BarChart3, Bell } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Home, Activity, Heart, Bell } from "lucide-react";
 
 export default function Sidebar() {
   const location = useLocation();
@@ -11,13 +11,13 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 bg-[#bee6ce] min-h-screen p-4 flex flex-col gap-2">
+    <aside className="w-64 bg-gradient-to-b from-[#bee6ce] to-[#a8dfc5] min-h-screen p-4 flex flex-col gap-2 shadow-lg">
       <div className="sticky top-16">
         <div className="flex items-center justify-between mb-6 px-2">
-          <h2 className="text-[#4f9d69] font-semibold">Menu</h2>
-          <button className="relative p-2 hover:bg-[#bcffdb] rounded-lg transition-colors">
+          <h2 className="text-[#4f9d69] font-bold text-lg">Menu</h2>
+          <button className="relative p-2 hover:bg-[#9cd4b8] rounded-lg transition-colors">
             <Bell className="w-5 h-5 text-[#4f9d69]" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-400 rounded-full"></span>
           </button>
         </div>
 
@@ -29,18 +29,17 @@ export default function Sidebar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                ? "bg-[#4f9d69] text-white"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
+                ? "bg-[#4f9d69] text-white shadow-md"
                 : "text-[#4f9d69] hover:bg-[#bcffdb]"
                 }`}
             >
               <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
+              <span className="font-medium">{item.label}</span>
             </Link>
           );
         })}
       </div>
-
     </aside>
   );
 }
