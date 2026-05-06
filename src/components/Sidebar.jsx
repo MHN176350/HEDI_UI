@@ -27,7 +27,6 @@ export default function Sidebar({ isOpen, closeSidebar }) {
 
   useEffect(() => {
     if (userId) loadSidebar();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const loadSidebar = () => {
