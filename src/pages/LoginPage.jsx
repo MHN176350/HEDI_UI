@@ -4,6 +4,7 @@ import { Activity, Mail, Lock, Loader2 } from "lucide-react";
 import { useGoogleLogin } from '@react-oauth/google'; // <-- Import the hook
 import { authService } from "../services/authService";
 import { useApi } from "../hooks/useApi";
+import Cookies from 'js-cookie';
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,18 +23,16 @@ export default function LoginPage() {
       
       if (response && response.status === "SUCCESS") {
         
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userId", response.data.userId);
+        Cookies.set("token", response.data.token, { expires: 1 });
+        Cookies.set("userId", response.data.userId, { expires: 1 });
 
         if (response.data.first === true) {
           navigate("/onboarding");
         } else {
           navigate("/dashboard");
         }
-        
       } else {
-    
-        setError(response?.message || "Invalid email or password");
+        setError(response?.message || "Invalid credentials");
       }
     } catch (err) {
       setError("Cannot connect to server. Please try again later.");
@@ -41,7 +40,7 @@ export default function LoginPage() {
   };
 
  const loginWithGoogle = useGoogleLogin({
-    flow: 'auth-code', 
+    flow: 'auth-code',
     onSuccess: async (codeResponse) => {
       try {
         setError("");
@@ -51,8 +50,8 @@ export default function LoginPage() {
         });
         
         if (response && response.status === "SUCCESS") {
-          localStorage.setItem("token", response.data.token);
-          localStorage.setItem("userId", response.data.userId);
+          Cookies.set("token", response.data.token, { expires: 1 });
+          Cookies.set("userId", response.data.userId, { expires: 1 });
 
           if (response.data.first === true) {
             navigate("/onboarding");

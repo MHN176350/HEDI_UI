@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Activity, Mail, Lock, User, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { authService } from "../services/authService";
+import Cookies from 'js-cookie';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -51,21 +52,18 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const response = await authService.register({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password
       });
 
       if (response.status === "SUCCESS") {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userId", response.data.userId);
+        
+        Cookies.set("token", response.data.token, { expires: 1 });
+        Cookies.set("userId", response.data.userId, { expires: 1 });
+        
         navigate("/onboarding");
       } else {
         setError(response.message || "Registration failed");
       }
     } catch (err) {
-      setError("Cannot connect to server. Please try again later.");
     } finally {
       setLoading(false);
     }
