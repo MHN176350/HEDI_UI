@@ -59,7 +59,8 @@ export default function RegisterPage() {
 
       if (response.status === "SUCCESS") {
         localStorage.setItem("token", response.data.token);
-        navigate("/dashboard");
+        localStorage.setItem("userId", response.data.userId);
+        navigate("/onboarding");
       } else {
         setError(response.message || "Registration failed");
       }

@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import HealthMetricsPage from "./pages/HealthMetricsPage";
 import HeartRatePage from "./pages/HeartRatePage";
+import OnboardingPage from "./pages/OnboardingPage";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
   {
     path: "/metrics",
     Component: HealthMetricsPage,
+  },
+  {
+  path: "/onboarding",
+  Component: OnboardingPage,
   },
   {
     path: "/heart-rate",
