@@ -7,6 +7,7 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import HealthMetricsPage from "./pages/HealthMetricsPage";
 import HeartRatePage from "./pages/HeartRatePage";
+import OnboardingPage from "./pages/OnboardingPage";
 
 function AppContent() {
   const location = useLocation();
@@ -25,6 +26,7 @@ function AppContent() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/metrics" element={<HealthMetricsPage />} />
             <Route path="/heart-rate" element={<HeartRatePage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
           </Routes>
         </div>
       </div>

@@ -1,12 +1,25 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bell, Activity, LogOut } from "lucide-react";
-
+import Cookies from 'js-cookie';
+import { authService } from "../services/authService";
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+ const token = Cookies.get("token");
+  const handleLogout = async () => {
+    const userId = Cookies.get("userId");
+    
+    if (userId) {
+      try {
+        await authService.logout(userId);
+      } catch (err) {
+        console.error("Backend logout failed", err);
+      }
+    }
+    
+    Cookies.remove("token");
+    Cookies.remove("userId");
+    
     navigate("/login");
   };
 
