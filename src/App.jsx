@@ -5,9 +5,9 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
-import HealthMetricsPage from "./pages/HealthMetricsPage";
 import MetricDetailPage from "./pages/MetricDetailPage";
 import OnboardingPage from "./pages/OnboardingPage";
+
 
 function AppContent() {
   const location = useLocation();
@@ -15,7 +15,7 @@ function AppContent() {
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
+       {!isAuthPage && <Navbar />}
       <div className={isAuthPage ? "" : "flex"}>
         {!isAuthPage && <Sidebar />}
         <div className={isAuthPage ? "w-full" : "flex-1 mr-0 mb-0 ml-1 pt-0"}>
