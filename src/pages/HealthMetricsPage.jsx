@@ -13,7 +13,6 @@ export default function HealthMetricsPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     alert("Health metrics saved successfully!");
-    // Reset form
     setBloodPressureSys("");
     setBloodPressureDia("");
     setBloodSugar("");
