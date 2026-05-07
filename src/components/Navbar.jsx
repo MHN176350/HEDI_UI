@@ -20,24 +20,6 @@ export default function Navbar() {
             Home
           </Link>
           <Link
-            to="/dashboard"
-            className={`hover:text-[#bcffdb] transition-colors ${location.pathname === '/dashboard' ? 'text-[#bcffdb]' : ''}`}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/metrics"
-            className={`hover:text-[#bcffdb] transition-colors ${location.pathname === '/metrics' ? 'text-[#bcffdb]' : ''}`}
-          >
-            Metrics
-          </Link>
-          <Link
-            to="/heart-rate"
-            className={`hover:text-[#bcffdb] transition-colors ${location.pathname === '/heart-rate' ? 'text-[#bcffdb]' : ''}`}
-          >
-            Heart Rate
-          </Link>
-          <Link
             to="/login"
             className={`hover:text-[#bcffdb] transition-colors ${location.pathname === '/login' ? 'text-[#bcffdb]' : ''}`}
           >
