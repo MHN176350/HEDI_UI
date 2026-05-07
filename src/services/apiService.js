@@ -31,5 +31,13 @@ export const apiService = {
   updateThresholdSettings: async (userId, settingsBatch) => {
     const response= await apiClient.put(`/thresholds/user/${userId}/settings`, settingsBatch);
   return response.data;
-}
+  },
+  getNotifications: async (userId) => {
+    const response= await apiClient.get(`/notifications/user/${userId}`);
+    return response.data
+ },
+  markNotificationsRead: async (userId) => {
+    const response= apiClient.put(`/notifications/user/${userId}/read`);
+    return response.data
+  }
 };

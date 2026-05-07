@@ -22,9 +22,17 @@ export default function OnboardingPage() {
 
   const { execute: fetchMetrics, loading: loadingMetrics } = useApi(apiService.getMetrics);
   const { execute: saveThresholds, loading: isSaving, error: saveError } = useApi(apiService.saveThresholds);
+  const getDefaultThresholds = (metricName) => {
+  if (metricName.includes("HEART")) return { min: 60, max: 100 };
+  if (metricName.includes("SUGAR")) return { min: 70, max: 100 }; 
+  if (metricName.includes("SYSTOLIC")) return { min: 90, max: 120 };
+  if (metricName.includes("DIASTOLIC")) return { min: 60, max: 80 };
+  if (metricName.includes("TEMPERATURE")) return { min: 97.0, max: 99.0 };
+  if (metricName.includes("SpO2")) return { min: 95, max: 100 };
+  return { min: 0, max: 100 }; 
+};
 
   useEffect(() => {
-    // Load metrics on mount
     const loadData = async () => {
       try {
         const res = await fetchMetrics();
@@ -36,16 +44,23 @@ export default function OnboardingPage() {
       }
     };
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleMetric = (metric) => {
-    setSelectedMetrics(prev => 
-      prev.some(m => m.id === metric.id) 
-        ? prev.filter(m => m.id !== metric.id)
-        : [...prev, metric]
-    );
-  };
+  setSelectedMetrics(prev => {
+    const isSelected = prev.some(m => m.id === metric.id);
+    if (isSelected) {
+      return prev.filter(m => m.id !== metric.id);
+    } else {
+      const defaults = getDefaultThresholds(metric.name);
+      setFormData(prevForm => ({
+        ...prevForm,
+        [metric.id]: { min: defaults.min, max: defaults.max }
+      }));
+      return [...prev, metric];
+    }
+  });
+};
   
 
   const handleInputChange = (metricId, field, value) => {
@@ -203,8 +218,6 @@ export default function OnboardingPage() {
               </div>
             </div>
           )}
-
-          {/* STEP 3: DEFINE THRESHOLDS */}
           {step === 3 && (
             <div className="animate-in fade-in slide-in-from-right-8 duration-500 max-w-3xl mx-auto w-full">
               <div className="text-center mb-8">

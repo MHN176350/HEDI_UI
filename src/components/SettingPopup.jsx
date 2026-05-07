@@ -16,10 +16,17 @@ export default function SettingsPopup({ onClose, onSaved }) {
   const { execute: fetchAllMetrics, loading: loadingMetrics } = useApi(apiService.getMetrics);
   const { execute: fetchUserThresholds, loading: loadingThresholds } = useApi(apiService.getUserThresholds);
   const { execute: updateSettings, loading: isSaving } = useApi(apiService.updateThresholdSettings);
-
+  const getDefaultThresholds = (metricName) => {
+  if (metricName.includes("HEART")) return { min: 60, max: 100 };
+  if (metricName.includes("SUGAR")) return { min: 70, max: 100 }; 
+  if (metricName.includes("SYSTOLIC")) return { min: 90, max: 120 };
+  if (metricName.includes("DIASTOLIC")) return { min: 60, max: 80 };
+  if (metricName.includes("TEMPERATURE")) return { min: 97.0, max: 99.0 };
+  if (metricName.includes("SpO2")) return { min: 95, max: 100 };
+  return { min: 0, max: 100 }; 
+};
   useEffect(() => {
     loadSettingsData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const loadSettingsData = async () => {
@@ -34,9 +41,9 @@ export default function SettingsPopup({ onClose, onSaved }) {
         
         const configMap = {};
         sysMetricsRes.data.forEach(m => {
-          configMap[m.id] = { metricId: m.id, isActive: false, min: "", max: "" };
+        const defaults = getDefaultThresholds(m.name);
+        configMap[m.id] = { metricId: m.id, isActive: false, min: defaults.min, max: defaults.max };
         });
-
         if (userThreshRes?.status === "SUCCESS") {
           userThreshRes.data.forEach(t => {
             configMap[t.metricId] = {

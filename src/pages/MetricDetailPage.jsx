@@ -1,4 +1,3 @@
-// src/pages/MetricDetailPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Cookies from "js-cookie";
@@ -6,8 +5,10 @@ import { Activity, Loader2, Lock } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { apiService } from "../services/apiService";
 import { useApi } from "../hooks/useApi";
+import BmiCalculatorCard from "../components/BMICalculator";
 
 const formatName = (name) => {
+  if (name === "BMI") return "BMI Tracker";
   return name.replace(/_/g, ' ').replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
@@ -49,11 +50,16 @@ export default function MetricDetailPage() {
 
   const loadPageData = async () => {
     try {
-      // 1. Get user limits
-      const threshRes = await fetchThresholds(userId);
-      const activeThreshold = threshRes?.data?.find(t => t.metricName === metricName);
-      if (activeThreshold) {
-        setThresholds({ min: activeThreshold.minValue, max: activeThreshold.maxValue, unit: activeThreshold.unit });
+      // 1. Get user limits OR inject standard BMI limits
+      if (metricName === "BMI") {
+        // Standard WHO healthy BMI range
+        setThresholds({ min: 18.5, max: 24.9, unit: "" });
+      } else {
+        const threshRes = await fetchThresholds(userId);
+        const activeThreshold = threshRes?.data?.find(t => t.metricName === metricName);
+        if (activeThreshold) {
+          setThresholds({ min: activeThreshold.minValue, max: activeThreshold.maxValue, unit: activeThreshold.unit });
+        }
       }
 
       // 2. Check latest record for the 1-hour lock
@@ -101,10 +107,10 @@ export default function MetricDetailPage() {
   const isHealthy = currentReading !== "--" && currentReading >= thresholds.min && currentReading <= thresholds.max;
 
   return (
-    // Replaced standard background with a soft, elegant gradient
     <div className="flex-1 p-6 md:p-10 min-h-[calc(100vh-76px)] bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40">
       <div className="max-w-5xl mx-auto">
         
+        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <div className="w-14 h-14 bg-white rounded-2xl shadow-md flex items-center justify-center border border-gray-100">
             <Activity className="w-7 h-7 text-[#4f9d69]" />
@@ -116,52 +122,58 @@ export default function MetricDetailPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Input Form Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800">Log New Reading</h2>
-              <p className="text-sm text-gray-500">Record your current stats to update the charts.</p>
-            </div>
-
+          
+          {/* Input Area (Swaps between Locked State, BMI Card, and Standard Form) */}
+          <div className="h-full flex flex-col">
             {lockMinutes > 0 ? (
-              // Locked State UI
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 text-center space-y-3">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Lock className="w-6 h-6 text-orange-500" />
-                </div>
-                <h3 className="font-bold text-orange-800">Input Locked</h3>
-                <p className="text-sm text-orange-600">
-                  To ensure data accuracy, please wait before logging another reading.
-                </p>
-                <div className="inline-block px-4 py-2 bg-white rounded-full text-orange-600 font-bold text-sm shadow-sm mt-2">
-                  Available in {lockMinutes} mins
+              <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 h-full flex flex-col justify-center">
+                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 text-center space-y-3">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Lock className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <h3 className="font-bold text-orange-800">Input Locked</h3>
+                  <p className="text-sm text-orange-600">
+                    To ensure data accuracy, please wait before logging another reading.
+                  </p>
+                  <div className="inline-block px-4 py-2 bg-white rounded-full text-orange-600 font-bold text-sm shadow-sm mt-2">
+                    Available in {lockMinutes} mins
+                  </div>
                 </div>
               </div>
+            ) : metricName === "BMI" ? (
+              // If it's BMI and not locked, show the specialized calculator card
+              <BmiCalculatorCard onLogged={loadPageData} />
             ) : (
-              // Active Form UI
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-gray-700 mb-2 font-bold text-sm">
-                    Measurement ({thresholds.unit})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={metricValue}
-                    onChange={(e) => setMetricValue(e.target.value)}
-                    placeholder={`Healthy range: ${thresholds.min} - ${thresholds.max}`}
-                    className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#4f9d69] focus:bg-white transition-all text-lg shadow-inner"
-                    required
-                  />
+              // If it's any other metric and not locked, show standard form
+              <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 h-full">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">Log New Reading</h2>
+                  <p className="text-sm text-gray-500">Record your current stats to update the charts.</p>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full py-4 bg-gradient-to-r from-[#4f9d69] to-[#3a7d51] text-white rounded-2xl hover:shadow-lg transition-all font-bold flex justify-center items-center gap-2 disabled:opacity-50"
-                >
-                  {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save Reading"}
-                </button>
-              </form>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-gray-700 mb-2 font-bold text-sm">
+                      Measurement ({thresholds.unit})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={metricValue}
+                      onChange={(e) => setMetricValue(e.target.value)}
+                      placeholder={`Healthy range: ${thresholds.min} - ${thresholds.max}`}
+                      className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#4f9d69] focus:bg-white transition-all text-lg shadow-inner"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full py-4 bg-gradient-to-r from-[#4f9d69] to-[#3a7d51] text-white rounded-2xl hover:shadow-lg transition-all font-bold flex justify-center items-center gap-2 disabled:opacity-50"
+                  >
+                    {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save Reading"}
+                  </button>
+                </form>
+              </div>
             )}
           </div>
 
@@ -196,7 +208,6 @@ export default function MetricDetailPage() {
           </div>
 
           {loadingRecords ? (
-            // Beautiful CSS Skeleton Loader for the Chart
             <div className="h-[350px] w-full flex items-end justify-between gap-2 opacity-50 px-8 pb-8">
               {[40, 70, 45, 90, 65, 80, 50, 100, 60, 85].map((height, i) => (
                 <div key={i} className="w-full bg-gray-200 rounded-t-md animate-pulse" style={{ height: `${height}%`, animationDelay: `${i * 0.1}s` }}></div>
