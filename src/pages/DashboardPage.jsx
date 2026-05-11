@@ -313,7 +313,6 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* RECENT ACTIVITY LIST */}
           <div className="lg:col-span-1 bg-white/90 backdrop-blur-xl rounded-3xl shadow-xl border border-white p-8 flex flex-col">
             <h2 className="text-xl font-bold text-gray-800 mb-6">Recent Activity</h2>
             <div className="flex-1 flex flex-col gap-3 overflow-y-auto custom-scrollbar pr-2 max-h-[360px]">
@@ -334,7 +333,6 @@ export default function DashboardPage() {
                     minLimit = 18.5; maxLimit = 24.9; themeColor = '#22c55e';
                   }
 
-                  // 10% Margin Tiered Status
                   const status = getHealthStatus(rec.metricValue, minLimit, maxLimit);
                   const Icon = getMetricIcon(rec.metricType);
                   
