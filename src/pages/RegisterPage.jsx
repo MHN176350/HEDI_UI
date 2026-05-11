@@ -62,7 +62,7 @@ export default function RegisterPage() {
         
         Cookies.set("token", response.data.token, { expires: 1 });
         Cookies.set("userId", response.data.userId, { expires: 1 });
-        
+        Cookies.set("userName", response.data.firstName, { expires: 1 });
         navigate("/onboarding");
       } else {
         setError(response.message || "Registration failed");
