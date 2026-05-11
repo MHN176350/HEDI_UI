@@ -5,10 +5,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white font-sans overflow-x-hidden relative">
       
-      {/* 
-        CURVED BACKGROUND 
-        We use an absolute div scaled extra wide to create that smooth SVG curve effect 
-      */}
       <div className="absolute top-0 left-[50%] w-[150%] -translate-x-1/2 h-[750px] bg-[#bee6ce] rounded-b-[50%] -z-10"></div>
 
       {/* NAVBAR */}
@@ -30,12 +26,10 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
-
-      {/* HERO SECTION */}
       <main className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-16 mt-16">
           
-          {/* Hero Text */}
+
           <div className="flex-1 text-center lg:text-left z-10">
             <h1 className="text-5xl md:text-6xl font-extrabold text-[#4f9d69] leading-tight mb-6">
               Take Control of <br className="hidden lg:block"/>
@@ -54,7 +48,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Hero Graphic (Recreating the SVG Card) */}
           <div className="flex-1 w-full max-w-lg z-10">
             <div className="bg-white rounded-[2rem] shadow-2xl shadow-[#4f9d69]/20 p-8 border border-white">
               
@@ -70,13 +63,12 @@ export default function HomePage() {
               </div>
 
               <div className="bg-[#f8fdfa] border-2 border-[#bee6ce] rounded-2xl p-6 relative h-48 flex items-end">
-                {/* Decorative Graph Line */}
                 <svg width="100%" height="100%" viewBox="0 0 400 150" preserveAspectRatio="none" className="absolute bottom-6 left-0 right-0 px-6">
                   <path d="M0 100 L50 40 L100 70 L150 10 L200 60 L250 10 L300 40 L350 100" stroke="#68d89b" strokeWidth="4" fill="none" strokeLinejoin="round"/>
                   <circle cx="150" cy="10" r="6" fill="#4f9d69" stroke="#ffffff" strokeWidth="3"/>
                 </svg>
                 
-                {/* Alert Badge */}
+          
                 <div className="absolute top-4 right-6 bg-[#4f9d69] text-white px-3 py-1 rounded-lg text-xs font-bold shadow-md">
                   Alert: High
                 </div>
@@ -86,7 +78,7 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* FEATURES SECTION */}
+     
       <section id="features" className="py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-extrabold text-[#4f9d69] mb-4">Everything you need for a healthier you.</h2>
@@ -94,7 +86,6 @@ export default function HomePage() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Card 1 */}
           <div className="bg-white p-8 rounded-3xl shadow-xl shadow-[#4f9d69]/10 hover:-translate-y-2 transition-transform duration-300">
             <div className="w-14 h-14 bg-[#bcffdb] rounded-full flex items-center justify-center mb-6">
               <PlusCircle className="w-7 h-7 text-[#4f9d69]" />
@@ -105,7 +96,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Card 2 */}
+  
           <div className="bg-white p-8 rounded-3xl shadow-xl shadow-[#4f9d69]/10 hover:-translate-y-2 transition-transform duration-300">
             <div className="w-14 h-14 bg-[#bcffdb] rounded-full flex items-center justify-center mb-6">
               <BarChart3 className="w-7 h-7 text-[#4f9d69]" />
@@ -116,7 +107,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Card 3 */}
+   
           <div className="bg-white p-8 rounded-3xl shadow-xl shadow-[#4f9d69]/10 hover:-translate-y-2 transition-transform duration-300">
             <div className="w-14 h-14 bg-[#bcffdb] rounded-full flex items-center justify-center mb-6">
               <Bell className="w-7 h-7 text-[#4f9d69]" />
@@ -129,7 +120,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA SECTION */}
+
       <section className="py-12 px-6 max-w-7xl mx-auto">
         <div className="bg-[#bcffdb] rounded-[2rem] p-12 md:p-20 text-center relative overflow-hidden">
           <h2 className="text-4xl font-extrabold text-[#4f9d69] mb-4 relative z-10">Ready to start tracking?</h2>
@@ -140,7 +131,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="max-w-7xl mx-auto px-6 py-12 mt-12 border-t-2 border-[#bee6ce]">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div>

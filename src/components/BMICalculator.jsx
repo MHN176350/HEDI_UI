@@ -55,8 +55,6 @@ export default function BmiCalculatorCard({ onLogged }) {
         metricValue: bmiResult,
         recordedAt: new Date().toISOString()
       });
-      
-      // NEW: Show success banner and clear the form!
       setMessage({ type: "success", text: "BMI successfully logged!" });
       setWeight("");
       setHeight(170);
@@ -85,7 +83,6 @@ export default function BmiCalculatorCard({ onLogged }) {
 
       <div className="space-y-6 flex-1">
         
-        {/* NEW: Inline Message Banner */}
         {message.text && (
           <div className={`p-4 rounded-2xl flex items-center gap-3 text-sm font-bold animate-in fade-in slide-in-from-top-2 ${
             message.type === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-[#4f9d69] border border-green-100'

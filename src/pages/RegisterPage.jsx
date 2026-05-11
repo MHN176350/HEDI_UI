@@ -65,7 +65,7 @@ export default function RegisterPage() {
         Cookies.set("userName", response.data.firstName, { expires: 1 });
         navigate("/onboarding");
       } else {
-        setError(response.message || "Registration failed");
+        setError(response.data || "Registration failed");
       }
     } catch (err) {
     } finally {
@@ -93,7 +93,7 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-[#bee6ce] via-[#a8dfc5] to-[#bcffdb] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
-          {/* Header */}
+        
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center">
               <div className="w-14 h-14 bg-gradient-to-br from-[#4f9d69] to-[#2d6a4f] rounded-full flex items-center justify-center shadow-lg">
@@ -104,7 +104,6 @@ export default function RegisterPage() {
             <p className="text-gray-500 text-sm">Create your account to start tracking your health</p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700 text-sm flex items-start gap-2">
               <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -112,9 +111,7 @@ export default function RegisterPage() {
             </div>
           )}
 
-          {/* Registration Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-[#4f9d69] font-medium mb-2 text-sm">First Name</label>

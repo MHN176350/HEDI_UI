@@ -62,7 +62,6 @@ export default function Navbar({ toggleSidebar }) {
         
         <div className="flex items-center gap-3">
           <button onClick={toggleSidebar} className="md:hidden p-1 hover:bg-[#2d6a4f] rounded-lg transition-colors">
-             {/* Assuming you imported Menu from lucide-react in your actual file! */}
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
           </button>
           <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">

@@ -41,6 +41,7 @@ export default function SettingsPopup({ onClose, onSaved }) {
         
         const configMap = {};
         sysMetricsRes.data.forEach(m => {
+          if (m.name==="BMI") return;
         const defaults = getDefaultThresholds(m.name);
         configMap[m.id] = { metricId: m.id, isActive: false, min: defaults.min, max: defaults.max };
         });
