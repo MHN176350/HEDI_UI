@@ -39,5 +39,13 @@ export const apiService = {
   markNotificationsRead: async (userId) => {
     const response= apiClient.put(`/notifications/user/${userId}/read`);
     return response.data
+  },
+  getUserProfile: async (userId) => {
+    const response = await apiClient.get(`auth/user/${userId}/profile`);
+    return response.data;
+  },
+  updateUserProfile: async (userId, profileData) => {
+    const response = await apiClient.put(`auth/user/${userId}/profile`, profileData);
+    return response.data;
   }
 };

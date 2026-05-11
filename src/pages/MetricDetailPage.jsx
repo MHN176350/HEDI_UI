@@ -18,19 +18,16 @@ export default function MetricDetailPage() {
   
   const [metricValue, setMetricValue] = useState("");
   const [chartData, setChartData] = useState([]);
-  const [thresholds, setThresholds] = useState({ min: 0, max: 0, unit: "" });
-  
-  // Lock state
+  const [thresholds, setThresholds] = useState({ min: 0, max: 0, unit: "", themeColor: "#4f9d69", imgUrl: null });
   const [lockMinutes, setLockMinutes] = useState(0);
 
   const { execute: fetchRecords, loading: loadingRecords } = useApi(apiService.getUserRecords);
-  const { execute: fetchThresholds } = useApi(apiService.getUserThresholds);
   const { execute: fetchLatestRecord } = useApi(apiService.getLatestRecord);
   const { execute: saveRecord, loading: isSaving } = useApi(apiService.saveRecord);
+  const { execute: fetchMetrics } = useApi(apiService.getMetrics);
 
   useEffect(() => {
     loadPageData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metricName]);
 
   const calculateLockTime = (lastRecordTime) => {
@@ -40,7 +37,6 @@ export default function MetricDetailPage() {
     }
     const diffMs = Date.now() - new Date(lastRecordTime).getTime();
     const oneHourMs = 60 * 60 * 1000;
-    
     if (diffMs < oneHourMs) {
       setLockMinutes(Math.ceil((oneHourMs - diffMs) / 60000));
     } else {
@@ -50,27 +46,22 @@ export default function MetricDetailPage() {
 
   const loadPageData = async () => {
     try {
-      // 1. Get user limits OR inject standard BMI limits
-      if (metricName === "BMI") {
-        // Standard WHO healthy BMI range
-        setThresholds({ min: 18.5, max: 24.9, unit: "" });
-      } else {
-        const threshRes = await fetchThresholds(userId);
-        const activeThreshold = threshRes?.data?.find(t => t.metricName === metricName);
-        if (activeThreshold) {
-          setThresholds({ min: activeThreshold.minValue, max: activeThreshold.maxValue, unit: activeThreshold.unit });
-        }
-      }
+      const metricsRes = await fetchMetrics();
+      const metricsList = Array.isArray(metricsRes) ? metricsRes : (metricsRes?.data || []);
+      const metricDef = metricsList.find(m => m.name === metricName) || {};
 
-      // 2. Check latest record for the 1-hour lock
+      setThresholds({ 
+        min: metricDef.minLimit || 0, 
+        max: metricDef.maxLimit || 100, 
+        unit: metricDef.unit || "",
+        themeColor: metricDef.themeColor || "#4f9d69",
+        imgUrl: metricDef.imgUrl || null
+      });
+
       const latestRes = await fetchLatestRecord(userId, metricName);
-      if (latestRes?.data) {
-        calculateLockTime(latestRes.data.recordedAt);
-      } else {
-        setLockMinutes(0);
-      }
+      if (latestRes?.data) calculateLockTime(latestRes.data.recordedAt);
+      else setLockMinutes(0);
 
-      // 3. Get history for the chart
       const recordRes = await fetchRecords(userId);
       const filteredData = recordRes?.data
         ?.filter(r => r.metricType === metricName)
@@ -96,7 +87,7 @@ export default function MetricDetailPage() {
       const res = await saveRecord(userId, payload);
       if (res?.status === "SUCCESS") {
         setMetricValue("");
-        loadPageData(); // Refresh chart and trigger lock
+        loadPageData(); 
       }
     } catch (err) {
       alert("Failed to save record");
@@ -110,20 +101,27 @@ export default function MetricDetailPage() {
     <div className="flex-1 p-6 md:p-10 min-h-[calc(100vh-76px)] bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40">
       <div className="max-w-5xl mx-auto">
         
-        {/* Header */}
+        {/* Dynamic Header */}
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 bg-white rounded-2xl shadow-md flex items-center justify-center border border-gray-100">
-            <Activity className="w-7 h-7 text-[#4f9d69]" />
+          <div 
+            className="w-16 h-16 rounded-2xl shadow-md flex items-center justify-center border border-gray-100 p-1"
+            style={{ backgroundColor: thresholds.themeColor }}
+          >
+            {thresholds.imgUrl ? (
+              <img src={thresholds.imgUrl} alt={metricName} className="w-full h-full object-cover rounded-xl" />
+            ) : (
+              <Activity className="w-8 h-8 text-white" />
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-800 tracking-tight">{formatName(metricName)}</h1>
-            <p className="text-gray-500 font-medium">Daily Monitoring Dashboard</p>
+            <p className="text-gray-500 font-medium" style={{ color: thresholds.themeColor }}>Daily Monitoring Dashboard</p>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           
-          {/* Input Area (Swaps between Locked State, BMI Card, and Standard Form) */}
+          {/* Input Area */}
           <div className="h-full flex flex-col">
             {lockMinutes > 0 ? (
               <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 h-full flex flex-col justify-center">
@@ -132,19 +130,15 @@ export default function MetricDetailPage() {
                     <Lock className="w-6 h-6 text-orange-500" />
                   </div>
                   <h3 className="font-bold text-orange-800">Input Locked</h3>
-                  <p className="text-sm text-orange-600">
-                    To ensure data accuracy, please wait before logging another reading.
-                  </p>
+                  <p className="text-sm text-orange-600">To ensure data accuracy, please wait before logging another reading.</p>
                   <div className="inline-block px-4 py-2 bg-white rounded-full text-orange-600 font-bold text-sm shadow-sm mt-2">
                     Available in {lockMinutes} mins
                   </div>
                 </div>
               </div>
             ) : metricName === "BMI" ? (
-              // If it's BMI and not locked, show the specialized calculator card
               <BmiCalculatorCard onLogged={loadPageData} />
             ) : (
-              // If it's any other metric and not locked, show standard form
               <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 h-full">
                 <div className="mb-6">
                   <h2 className="text-xl font-bold text-gray-800">Log New Reading</h2>
@@ -161,14 +155,16 @@ export default function MetricDetailPage() {
                       value={metricValue}
                       onChange={(e) => setMetricValue(e.target.value)}
                       placeholder={`Healthy range: ${thresholds.min} - ${thresholds.max}`}
-                      className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#4f9d69] focus:bg-white transition-all text-lg shadow-inner"
+                      className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:outline-none transition-all text-lg shadow-inner"
+                      style={{ focusBorderColor: thresholds.themeColor }}
                       required
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="w-full py-4 bg-gradient-to-r from-[#4f9d69] to-[#3a7d51] text-white rounded-2xl hover:shadow-lg transition-all font-bold flex justify-center items-center gap-2 disabled:opacity-50"
+                    className="w-full py-4 text-white rounded-2xl hover:shadow-lg transition-all font-bold flex justify-center items-center gap-2 disabled:opacity-50"
+                    style={{ backgroundColor: thresholds.themeColor }}
                   >
                     {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save Reading"}
                   </button>
@@ -235,10 +231,10 @@ export default function MetricDetailPage() {
                 <Line 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#4f9d69" 
+                  stroke={thresholds.themeColor} 
                   strokeWidth={4}
-                  dot={{ fill: '#ffffff', stroke: '#4f9d69', strokeWidth: 3, r: 5 }}
-                  activeDot={{ r: 8, fill: '#4f9d69', stroke: '#ffffff', strokeWidth: 3 }}
+                  dot={{ fill: '#ffffff', stroke: thresholds.themeColor, strokeWidth: 3, r: 5 }}
+                  activeDot={{ r: 8, fill: thresholds.themeColor, stroke: '#ffffff', strokeWidth: 3 }}
                   name={formatName(metricName)} 
                   animationDuration={1500}
                 />

@@ -8,7 +8,6 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import MetricDetailPage from "./pages/MetricDetailPage";
-import OnboardingPage from "./pages/OnboardingPage";
 
 function AppContent() {
   const location = useLocation();
@@ -50,7 +49,6 @@ function AppContent() {
         <main className="flex-1 min-w-0 overflow-y-auto bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40">
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/metric/:metricName" element={<MetricDetailPage />} />
           </Routes>
         </main>

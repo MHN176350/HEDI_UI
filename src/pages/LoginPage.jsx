@@ -26,10 +26,7 @@ export default function LoginPage() {
         Cookies.set("token", response.data.token, { expires: 1 });
         Cookies.set("userId", response.data.userId, { expires: 1 });
         Cookies.set("userName", response.data.firstName, { expires: 1 });
-        debugger;
-        if (response.data.first === true) {
-          navigate("/onboarding");
-        } else {
+        if (response.data) {
           navigate("/dashboard");
         }
       } else {
@@ -54,9 +51,7 @@ export default function LoginPage() {
           Cookies.set("token", response.data.token, { expires: 1 });
           Cookies.set("userId", response.data.userId, { expires: 1 });
           Cookies.set("userName", response.data.firstName, { expires: 1 });
-          if (response.data.first === true) {
-            navigate("/onboarding");
-          } else {
+          if (response.data) {
             navigate("/dashboard");
           }
         } else {
