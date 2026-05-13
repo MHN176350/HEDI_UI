@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Cookies from "js-cookie";
-import { Activity, Loader2, Lock } from "lucide-react";
+import { Activity, Loader2, Lock, Trash2, AlertTriangle, X } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { apiService } from "../services/apiService";
 import { useApi } from "../hooks/useApi";
@@ -20,11 +20,13 @@ export default function MetricDetailPage() {
   const [chartData, setChartData] = useState([]);
   const [thresholds, setThresholds] = useState({ min: 0, max: 0, unit: "", themeColor: "#4f9d69", imgUrl: null });
   const [lockMinutes, setLockMinutes] = useState(0);
+  const [showClearModal, setShowClearModal] = useState(false); // NEW STATE
 
   const { execute: fetchRecords, loading: loadingRecords } = useApi(apiService.getUserRecords);
   const { execute: fetchLatestRecord } = useApi(apiService.getLatestRecord);
   const { execute: saveRecord, loading: isSaving } = useApi(apiService.saveRecord);
   const { execute: fetchMetrics } = useApi(apiService.getMetrics);
+  const { execute: clearRecords, loading: isClearing } = useApi(apiService.clearMetricRecords); // NEW API HOOK
 
   useEffect(() => {
     loadPageData();
@@ -94,14 +96,63 @@ export default function MetricDetailPage() {
     }
   };
 
+  // NEW: Handle Clear Confirmation
+  const handleClearHistory = async () => {
+    try {
+      const res = await clearRecords(userId, metricName);
+      if (res?.status === "SUCCESS") {
+        setShowClearModal(false);
+        setChartData([]); // Instantly wipe chart visually
+        setLockMinutes(0); // Lift lock
+        loadPageData(); // Refresh to sync backend state
+      }
+    } catch (err) {
+      alert("Failed to clear records");
+    }
+  };
+
   const currentReading = chartData.length > 0 ? chartData[chartData.length - 1].value : "--";
   const isHealthy = currentReading !== "--" && currentReading >= thresholds.min && currentReading <= thresholds.max;
 
   return (
-    <div className="flex-1 p-6 md:p-10 min-h-[calc(100vh-76px)] bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40">
+    <div className="flex-1 p-6 md:p-10 min-h-[calc(100vh-76px)] bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40 relative">
+      
+      {/* NEW: CLEAR CONFIRMATION MODAL */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 sm:p-8 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-6">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Clear All Records?</h2>
+              <p className="text-gray-500 mb-8 leading-relaxed">
+                Are you sure you want to permanently delete all your historical data for <strong>{formatName(metricName)}</strong>? This will also reset your personalized baseline analytics. This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setShowClearModal(false)}
+                  disabled={isClearing}
+                  className="flex-1 py-3.5 border-2 border-gray-200 text-gray-600 font-bold rounded-2xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleClearHistory}
+                  disabled={isClearing}
+                  className="flex-1 py-3.5 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isClearing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  Yes, Clear Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
-        
-        {/* Dynamic Header */}
         <div className="flex items-center gap-4 mb-8">
           <div 
             className="w-16 h-16 rounded-2xl shadow-md flex items-center justify-center border border-gray-100 p-1"
@@ -120,7 +171,6 @@ export default function MetricDetailPage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          
           {/* Input Area */}
           <div className="h-full flex flex-col">
             {lockMinutes > 0 ? (
@@ -196,11 +246,23 @@ export default function MetricDetailPage() {
 
         {/* History Chart Card */}
         <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8">
-          <div className="flex justify-between items-end mb-8">
+          
+          <div className="flex justify-between items-center mb-8">
             <div>
               <h2 className="text-xl font-bold text-gray-800">Historical Trends</h2>
               <p className="text-sm text-gray-500">Your logged history over time.</p>
             </div>
+            {/* NEW: TRASH BUTTON */}
+            {chartData.length > 0 && (
+              <button 
+                onClick={() => setShowClearModal(true)}
+                className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-transparent hover:border-red-100 flex items-center gap-2 group"
+                title="Clear all records"
+              >
+                <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline-block text-sm font-bold">Clear History</span>
+              </button>
+            )}
           </div>
 
           {loadingRecords ? (
