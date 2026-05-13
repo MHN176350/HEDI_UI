@@ -16,13 +16,11 @@ export const apiService = {
     return response.data;
   },
   
-  // UPDATED: Now points to the new Tracked Metrics Batch endpoint
   saveThresholds: async (userId, thresholdDataArray) => {
     const response = await apiClient.post(`/tracked-metrics/user/${userId}/batch`, thresholdDataArray);
     return response.data; 
   },
   
-  // UPDATED: Now fetches the Smart Analytics Profile instead of just min/max
   getUserThresholds: async(userId) => {
      const response= await apiClient.get(`/tracked-metrics/user/${userId}`);
      return response.data;
@@ -33,7 +31,6 @@ export const apiService = {
    return response.data;
   },
   
-  // UPDATED: Now updates the active status in the Tracked Metrics table
   updateThresholdSettings: async (userId, settingsBatch) => {
     const response = await apiClient.put(`/tracked-metrics/user/${userId}/settings`, settingsBatch);
     return response.data;
@@ -45,7 +42,7 @@ export const apiService = {
   },
   
   markNotificationsRead: async (userId) => {
-    const response = await apiClient.put(`/notifications/user/${userId}/read`); // Added missing await
+    const response = await apiClient.put(`/notifications/user/${userId}/read`);
     return response.data;
   },
   
