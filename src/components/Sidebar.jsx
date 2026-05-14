@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Activity, Heart, Droplet, Thermometer, Wind, Settings, X, HelpCircle, ChevronUp, ChevronDown, BookOpen, MessageSquare, UserCircle } from "lucide-react";
+import { Home, Activity, Heart, Droplet, ShieldAlert, Thermometer, Wind, Settings, X, HelpCircle, ChevronUp, ChevronDown, BookOpen, MessageSquare, UserCircle } from "lucide-react";
 import Cookies from "js-cookie";
 import { apiService } from "../services/apiService";
 import { useApi } from "../hooks/useApi";
@@ -26,7 +26,14 @@ export default function Sidebar({ isOpen, closeSidebar }) {
   const userId = Cookies.get("userId");
   
   const { execute: fetchThresholds } = useApi(apiService.getUserThresholds);
-
+  const token = Cookies.get("token");
+  let isAdmin = false;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      isAdmin = payload.role === 'ADMIN';
+    } catch(e) { console.error("Invalid token"); }
+  }
   const loadSidebar = () => {
     fetchThresholds(userId).then(res => {
       if (res?.status === "SUCCESS") setTrackedMetrics(res.data);
@@ -110,6 +117,20 @@ export default function Sidebar({ isOpen, closeSidebar }) {
               <Home className="w-5 h-5" />
               <span>Dashboard</span>
             </Link>
+            {isAdmin && (
+              <Link
+                to="/admin"
+                onClick={closeSidebar}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 mt-2 ${
+                  location.pathname === "/admin" 
+                    ? "bg-red-50 text-red-600 font-bold" 
+                    : "text-gray-500 font-medium hover:bg-gray-50 hover:text-red-500"
+                }`}
+              >
+                <ShieldAlert className="w-5 h-5" />
+                <span>Admin Panel</span>
+              </Link>
+            )}
 
             <div className="mt-8 mb-3 px-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
               Tracked Metrics

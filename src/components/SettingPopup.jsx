@@ -6,6 +6,7 @@ import { useApi } from "../hooks/useApi";
 
 const formatName = (name) => name.replace(/_/g, ' ').replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 
+// We keep this as a fallback just in case an image fails to load
 const getMetricIcon = (name) => {
   const upper = name.toUpperCase();
   if (upper.includes("HEART")) return Heart;
@@ -28,6 +29,7 @@ export default function SettingsPopup({ onClose, onSaved }) {
 
   useEffect(() => {
     loadSettingsData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   const loadSettingsData = async () => {
@@ -74,8 +76,9 @@ export default function SettingsPopup({ onClose, onSaved }) {
     const payload = Object.values(localConfig).map(config => ({
       metricId: config.metricId,
       isActive: config.isActive,
-      minValue: config.min,
-      maxValue: config.max
+      // Values are passed as 0 because the backend natively handles WHO limits now
+      minValue: 0,
+      maxValue: 0
     }));
 
     try {
@@ -94,7 +97,7 @@ export default function SettingsPopup({ onClose, onSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 sm:p-6">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-300">
         
         {/* Header */}
@@ -105,10 +108,13 @@ export default function SettingsPopup({ onClose, onSaved }) {
             </div>
             <div>
               <h1 className="text-2xl font-bold">Metric Settings</h1>
-              <p className="text-[#bcffdb] text-sm">Toggle the health metrics you want to track</p>
+              {/* NEW: WHO Disclaimer */}
+              <p className="text-[#bcffdb] text-sm font-medium mt-0.5 max-w-sm">
+                Toggle tracking below. Our system automatically applies global World Health Organization (WHO) standards to evaluate your data.
+              </p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+          <button onClick={onClose} className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors self-start">
             <X className="w-6 h-6 text-white" />
           </button>
         </div>
@@ -128,43 +134,51 @@ export default function SettingsPopup({ onClose, onSaved }) {
                 if (!config) return null;
 
                 const IconComponent = getMetricIcon(metric.name);
+                const isActive = config.isActive;
 
                 return (
                   <div 
                     key={metric.id} 
                     onClick={() => handleToggle(metric.id)}
-                    className={`p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 bg-white flex justify-between items-center ${config.isActive ? 'border-[#4f9d69]/50 shadow-md bg-[#f0fdf4]' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'}`}
+                    className="p-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 bg-white flex justify-between items-center"
+                    // DYNAMIC BORDER & BACKGROUND
+                    style={{ 
+                      borderColor: isActive ? `${metric.themeColor}50` : '#f3f4f6', // 50 is hex for ~30% opacity
+                      backgroundColor: isActive ? `${metric.themeColor}08` : '#ffffff', // 08 is hex for ~5% opacity (very soft tint)
+                      boxShadow: isActive ? '0 4px 6px -1px rgba(0, 0, 0, 0.05)' : 'none'
+                    }}
                   >
                     <div className="flex items-center gap-3">
                       <div 
-  className="p-1 rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center transition-all duration-300"
-  style={{ 
-    backgroundColor: config.isActive ? metric.themeColor : '#f3f4f6',
-    opacity: config.isActive ? 1 : 0.6
-  }}
->
-  {metric.imgUrl ? (
-    <img 
-      src={metric.imgUrl} 
-      alt={metric.name} 
-      className="w-8 h-8 object-cover rounded-lg"
-    />
-  ) : (
-    <Activity className="w-6 h-6 text-white m-1" /> 
-  )}
-</div>
+                        className="p-1.5 rounded-xl shadow-sm border border-gray-100 overflow-hidden flex items-center justify-center transition-all duration-300"
+                        style={{ 
+                          backgroundColor: isActive ? metric.themeColor : '#f3f4f6',
+                          opacity: isActive ? 1 : 0.6
+                        }}
+                      >
+                        {metric.imgUrl ? (
+                          <img 
+                            src={metric.imgUrl} 
+                            alt={metric.name} 
+                            className="w-8 h-8 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <Activity className="w-6 h-6 text-white m-1" /> 
+                        )}
+                      </div>
                       <div>
-                        <h3 className={`font-bold text-sm ${config.isActive ? 'text-gray-800' : 'text-gray-500'}`}>
+                        <h3 className="font-bold text-sm" style={{ color: isActive ? '#1f2937' : '#9ca3af' }}>
                           {formatName(metric.name)}
                         </h3>
                       </div>
                     </div>
                     
-                    {/* Custom Toggle Switch */}
+                    {/* DYNAMIC TOGGLE SWITCH */}
                     <div 
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${config.isActive ? 'bg-[#4f9d69]' : 'bg-gray-300'}`}
+                      className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
+                      style={{ backgroundColor: isActive ? metric.themeColor : '#d1d5db' }}
                     >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition duration-300 ${config.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition duration-300 ${isActive ? 'translate-x-6' : 'translate-x-1'}`} />
                     </div>
                   </div>
                 );

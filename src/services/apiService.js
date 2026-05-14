@@ -59,4 +59,24 @@ export const apiService = {
     const response = await apiClient.delete(`/records/user/${userId}/metric/${metricName}`);
     return response.data;
   },
+  getAdminStats: async () => {
+    const response = await apiClient.get('/admin/stats');
+    return response.data;
+  },
+  getAllMetricsAdmin: async () => {
+    const response = await apiClient.get('/metrics/all');
+    return response.data;
+  },
+  addMetric: async (metricData) => {
+    const response = await apiClient.post('/metrics', metricData);
+    return response.data;
+  },
+  toggleMetricStatus: async (metricId) => {
+    const response = await apiClient.put(`/metrics/${metricId}/toggle`);
+    return response.data;
+  },
+  updateMetric: async (metricId, metricData) => {
+    const response = await apiClient.put(`/metrics/${metricId}`, metricData);
+    return response.data;
+  },
 };

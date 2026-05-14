@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import MetricDetailPage from "./pages/MetricDetailPage";
+import AdminPage from "./pages/AdminDashboardPage";
 
 function AppContent() {
   const location = useLocation();
@@ -16,7 +17,6 @@ function AppContent() {
 
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // If it's a public page (Landing, Login), just render it normally
   if (isPublicPage) {
     return (
       <Routes>
@@ -27,17 +27,16 @@ function AppContent() {
     );
   }
 
-  // --- APP SHELL LAYOUT FOR DASHBOARD ---
-  // Locks to 100vh. Navbar takes top space, bottom area splits into Sidebar and scrollable content.
+ 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
       
-      {/* Navbar sits at the top (shrink-0 ensures it never gets squished) */}
+  
       <div className="shrink-0 z-30 relative shadow-md">
         <Navbar toggleSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)} />
       </div>
 
-      {/* The remaining space is a flex row that hides outer overflow */}
+  
       <div className="flex flex-1 overflow-hidden relative">
         
         <Sidebar 
@@ -45,11 +44,11 @@ function AppContent() {
           closeSidebar={() => setIsMobileSidebarOpen(false)} 
         />
         
-        {/* Main Content Area: flex-1 takes remaining width, min-w-0 stops charts from breaking, overflow-y-auto lets it scroll! */}
         <main className="flex-1 min-w-0 overflow-y-auto bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40">
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/metric/:metricName" element={<MetricDetailPage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </main>
 
