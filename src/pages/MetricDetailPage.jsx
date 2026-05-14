@@ -1,13 +1,14 @@
-// src/pages/MetricDetailPage.jsx
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Cookies from "js-cookie";
-import { Activity, Loader2, Lock } from "lucide-react";
+import { Activity, Loader2, Lock, Trash2, AlertTriangle, X } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { apiService } from "../services/apiService";
 import { useApi } from "../hooks/useApi";
+import BmiCalculatorCard from "../components/BMICalculator";
 
 const formatName = (name) => {
+  if (name === "BMI") return "BMI Tracker";
   return name.replace(/_/g, ' ').replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 };
 
@@ -17,19 +18,18 @@ export default function MetricDetailPage() {
   
   const [metricValue, setMetricValue] = useState("");
   const [chartData, setChartData] = useState([]);
-  const [thresholds, setThresholds] = useState({ min: 0, max: 0, unit: "" });
-  
-  // Lock state
+  const [thresholds, setThresholds] = useState({ min: 0, max: 0, unit: "", themeColor: "#4f9d69", imgUrl: null });
   const [lockMinutes, setLockMinutes] = useState(0);
+  const [showClearModal, setShowClearModal] = useState(false); // NEW STATE
 
   const { execute: fetchRecords, loading: loadingRecords } = useApi(apiService.getUserRecords);
-  const { execute: fetchThresholds } = useApi(apiService.getUserThresholds);
   const { execute: fetchLatestRecord } = useApi(apiService.getLatestRecord);
   const { execute: saveRecord, loading: isSaving } = useApi(apiService.saveRecord);
+  const { execute: fetchMetrics } = useApi(apiService.getMetrics);
+  const { execute: clearRecords, loading: isClearing } = useApi(apiService.clearMetricRecords); // NEW API HOOK
 
   useEffect(() => {
     loadPageData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metricName]);
 
   const calculateLockTime = (lastRecordTime) => {
@@ -39,7 +39,6 @@ export default function MetricDetailPage() {
     }
     const diffMs = Date.now() - new Date(lastRecordTime).getTime();
     const oneHourMs = 60 * 60 * 1000;
-    
     if (diffMs < oneHourMs) {
       setLockMinutes(Math.ceil((oneHourMs - diffMs) / 60000));
     } else {
@@ -49,22 +48,22 @@ export default function MetricDetailPage() {
 
   const loadPageData = async () => {
     try {
-      // 1. Get user limits
-      const threshRes = await fetchThresholds(userId);
-      const activeThreshold = threshRes?.data?.find(t => t.metricName === metricName);
-      if (activeThreshold) {
-        setThresholds({ min: activeThreshold.minValue, max: activeThreshold.maxValue, unit: activeThreshold.unit });
-      }
+      const metricsRes = await fetchMetrics();
+      const metricsList = Array.isArray(metricsRes) ? metricsRes : (metricsRes?.data || []);
+      const metricDef = metricsList.find(m => m.name === metricName) || {};
 
-      // 2. Check latest record for the 1-hour lock
+      setThresholds({ 
+        min: metricDef.minLimit || 0, 
+        max: metricDef.maxLimit || 100, 
+        unit: metricDef.unit || "",
+        themeColor: metricDef.themeColor || "#4f9d69",
+        imgUrl: metricDef.imgUrl || null
+      });
+
       const latestRes = await fetchLatestRecord(userId, metricName);
-      if (latestRes?.data) {
-        calculateLockTime(latestRes.data.recordedAt);
-      } else {
-        setLockMinutes(0);
-      }
+      if (latestRes?.data) calculateLockTime(latestRes.data.recordedAt);
+      else setLockMinutes(0);
 
-      // 3. Get history for the chart
       const recordRes = await fetchRecords(userId);
       const filteredData = recordRes?.data
         ?.filter(r => r.metricType === metricName)
@@ -90,10 +89,25 @@ export default function MetricDetailPage() {
       const res = await saveRecord(userId, payload);
       if (res?.status === "SUCCESS") {
         setMetricValue("");
-        loadPageData(); // Refresh chart and trigger lock
+        loadPageData(); 
       }
     } catch (err) {
       alert("Failed to save record");
+    }
+  };
+
+  // NEW: Handle Clear Confirmation
+  const handleClearHistory = async () => {
+    try {
+      const res = await clearRecords(userId, metricName);
+      if (res?.status === "SUCCESS") {
+        setShowClearModal(false);
+        setChartData([]); // Instantly wipe chart visually
+        setLockMinutes(0); // Lift lock
+        loadPageData(); // Refresh to sync backend state
+      }
+    } catch (err) {
+      alert("Failed to clear records");
     }
   };
 
@@ -101,67 +115,111 @@ export default function MetricDetailPage() {
   const isHealthy = currentReading !== "--" && currentReading >= thresholds.min && currentReading <= thresholds.max;
 
   return (
-    // Replaced standard background with a soft, elegant gradient
-    <div className="flex-1 p-6 md:p-10 min-h-[calc(100vh-76px)] bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40">
+    <div className="flex-1 p-6 md:p-10 min-h-[calc(100vh-76px)] bg-gradient-to-br from-[#f0fdf4] via-[#e6fbf0] to-[#bcffdb]/40 relative">
+      
+      {/* NEW: CLEAR CONFIRMATION MODAL */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="p-6 sm:p-8 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-6">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Clear All Records?</h2>
+              <p className="text-gray-500 mb-8 leading-relaxed">
+                Are you sure you want to permanently delete all your historical data for <strong>{formatName(metricName)}</strong>? This will also reset your personalized baseline analytics. This action cannot be undone.
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setShowClearModal(false)}
+                  disabled={isClearing}
+                  className="flex-1 py-3.5 border-2 border-gray-200 text-gray-600 font-bold rounded-2xl hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleClearHistory}
+                  disabled={isClearing}
+                  className="flex-1 py-3.5 bg-red-500 text-white font-bold rounded-2xl hover:bg-red-600 shadow-lg shadow-red-500/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  {isClearing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  Yes, Clear Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto">
-        
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-14 h-14 bg-white rounded-2xl shadow-md flex items-center justify-center border border-gray-100">
-            <Activity className="w-7 h-7 text-[#4f9d69]" />
+          <div 
+            className="w-16 h-16 rounded-2xl shadow-md flex items-center justify-center border border-gray-100 p-1"
+            style={{ backgroundColor: thresholds.themeColor }}
+          >
+            {thresholds.imgUrl ? (
+              <img src={thresholds.imgUrl} alt={metricName} className="w-full h-full object-cover rounded-xl" />
+            ) : (
+              <Activity className="w-8 h-8 text-white" />
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-800 tracking-tight">{formatName(metricName)}</h1>
-            <p className="text-gray-500 font-medium">Daily Monitoring Dashboard</p>
+            <p className="text-gray-500 font-medium" style={{ color: thresholds.themeColor }}>Daily Monitoring Dashboard</p>
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          {/* Input Form Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-800">Log New Reading</h2>
-              <p className="text-sm text-gray-500">Record your current stats to update the charts.</p>
-            </div>
-
+          {/* Input Area */}
+          <div className="h-full flex flex-col">
             {lockMinutes > 0 ? (
-              // Locked State UI
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 text-center space-y-3">
-                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Lock className="w-6 h-6 text-orange-500" />
-                </div>
-                <h3 className="font-bold text-orange-800">Input Locked</h3>
-                <p className="text-sm text-orange-600">
-                  To ensure data accuracy, please wait before logging another reading.
-                </p>
-                <div className="inline-block px-4 py-2 bg-white rounded-full text-orange-600 font-bold text-sm shadow-sm mt-2">
-                  Available in {lockMinutes} mins
+              <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 h-full flex flex-col justify-center">
+                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 text-center space-y-3">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Lock className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <h3 className="font-bold text-orange-800">Input Locked</h3>
+                  <p className="text-sm text-orange-600">To ensure data accuracy, please wait before logging another reading.</p>
+                  <div className="inline-block px-4 py-2 bg-white rounded-full text-orange-600 font-bold text-sm shadow-sm mt-2">
+                    Available in {lockMinutes} mins
+                  </div>
                 </div>
               </div>
+            ) : metricName === "BMI" ? (
+              <BmiCalculatorCard onLogged={loadPageData} />
             ) : (
-              // Active Form UI
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-gray-700 mb-2 font-bold text-sm">
-                    Measurement ({thresholds.unit})
-                  </label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={metricValue}
-                    onChange={(e) => setMetricValue(e.target.value)}
-                    placeholder={`Healthy range: ${thresholds.min} - ${thresholds.max}`}
-                    className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:outline-none focus:border-[#4f9d69] focus:bg-white transition-all text-lg shadow-inner"
-                    required
-                  />
+              <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 h-full">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-gray-800">Log New Reading</h2>
+                  <p className="text-sm text-gray-500">Record your current stats to update the charts.</p>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full py-4 bg-gradient-to-r from-[#4f9d69] to-[#3a7d51] text-white rounded-2xl hover:shadow-lg transition-all font-bold flex justify-center items-center gap-2 disabled:opacity-50"
-                >
-                  {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save Reading"}
-                </button>
-              </form>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label className="block text-gray-700 mb-2 font-bold text-sm">
+                      Measurement ({thresholds.unit})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={metricValue}
+                      onChange={(e) => setMetricValue(e.target.value)}
+                      placeholder={`Healthy range: ${thresholds.min} - ${thresholds.max}`}
+                      className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-2xl focus:outline-none transition-all text-lg shadow-inner"
+                      style={{ focusBorderColor: thresholds.themeColor }}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full py-4 text-white rounded-2xl hover:shadow-lg transition-all font-bold flex justify-center items-center gap-2 disabled:opacity-50"
+                    style={{ backgroundColor: thresholds.themeColor }}
+                  >
+                    {isSaving ? <Loader2 className="w-6 h-6 animate-spin" /> : "Save Reading"}
+                  </button>
+                </form>
+              </div>
             )}
           </div>
 
@@ -188,15 +246,26 @@ export default function MetricDetailPage() {
 
         {/* History Chart Card */}
         <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8">
-          <div className="flex justify-between items-end mb-8">
+          
+          <div className="flex justify-between items-center mb-8">
             <div>
               <h2 className="text-xl font-bold text-gray-800">Historical Trends</h2>
               <p className="text-sm text-gray-500">Your logged history over time.</p>
             </div>
+            {/* NEW: TRASH BUTTON */}
+            {chartData.length > 0 && (
+              <button 
+                onClick={() => setShowClearModal(true)}
+                className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors border border-transparent hover:border-red-100 flex items-center gap-2 group"
+                title="Clear all records"
+              >
+                <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                <span className="hidden sm:inline-block text-sm font-bold">Clear History</span>
+              </button>
+            )}
           </div>
 
           {loadingRecords ? (
-            // Beautiful CSS Skeleton Loader for the Chart
             <div className="h-[350px] w-full flex items-end justify-between gap-2 opacity-50 px-8 pb-8">
               {[40, 70, 45, 90, 65, 80, 50, 100, 60, 85].map((height, i) => (
                 <div key={i} className="w-full bg-gray-200 rounded-t-md animate-pulse" style={{ height: `${height}%`, animationDelay: `${i * 0.1}s` }}></div>
@@ -224,10 +293,10 @@ export default function MetricDetailPage() {
                 <Line 
                   type="monotone" 
                   dataKey="value" 
-                  stroke="#4f9d69" 
+                  stroke={thresholds.themeColor} 
                   strokeWidth={4}
-                  dot={{ fill: '#ffffff', stroke: '#4f9d69', strokeWidth: 3, r: 5 }}
-                  activeDot={{ r: 8, fill: '#4f9d69', stroke: '#ffffff', strokeWidth: 3 }}
+                  dot={{ fill: '#ffffff', stroke: thresholds.themeColor, strokeWidth: 3, r: 5 }}
+                  activeDot={{ r: 8, fill: thresholds.themeColor, stroke: '#ffffff', strokeWidth: 3 }}
                   name={formatName(metricName)} 
                   animationDuration={1500}
                 />

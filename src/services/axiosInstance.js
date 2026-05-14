@@ -8,7 +8,7 @@ const apiClient = axios.create({
   },
 });
 
-// 1. Request Interceptor (Your existing code)
+// 1. Request Interceptor 
 apiClient.interceptors.request.use(
   (config) => {
     const token = Cookies.get('token');

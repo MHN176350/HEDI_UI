@@ -17,19 +17,66 @@ export const apiService = {
   },
   
   saveThresholds: async (userId, thresholdDataArray) => {
-    const response = await apiClient.post(`/thresholds/user/${userId}/batch`, thresholdDataArray);
+    const response = await apiClient.post(`/tracked-metrics/user/${userId}/batch`, thresholdDataArray);
     return response.data; 
   },
-  getUserThresholds: async(userId)=>{
-     const response= await apiClient.get(`/thresholds/user/${userId}`);
+  
+  getUserThresholds: async(userId) => {
+     const response= await apiClient.get(`/tracked-metrics/user/${userId}`);
      return response.data;
-    },
-  getLatestRecord: async (userId, metricName) =>{
+  },
+  
+  getLatestRecord: async (userId, metricName) => {
    const response= await apiClient.get(`/records/user/${userId}/metric/${metricName}/latest`);
    return response.data;
   },
+  
   updateThresholdSettings: async (userId, settingsBatch) => {
-    const response= await apiClient.put(`/thresholds/user/${userId}/settings`, settingsBatch);
-  return response.data;
-}
+    const response = await apiClient.put(`/tracked-metrics/user/${userId}/settings`, settingsBatch);
+    return response.data;
+  },
+  
+  getNotifications: async (userId) => {
+    const response = await apiClient.get(`/notifications/user/${userId}`);
+    return response.data;
+  },
+  
+  markNotificationsRead: async (userId) => {
+    const response = await apiClient.put(`/notifications/user/${userId}/read`);
+    return response.data;
+  },
+  
+  getUserProfile: async (userId) => {
+    const response = await apiClient.get(`auth/user/${userId}/profile`);
+    return response.data;
+  },
+  
+  updateUserProfile: async (userId, profileData) => {
+    const response = await apiClient.put(`auth/user/${userId}/profile`, profileData);
+    return response.data;
+  },
+  clearMetricRecords: async (userId, metricName) => {
+    const response = await apiClient.delete(`/records/user/${userId}/metric/${metricName}`);
+    return response.data;
+  },
+  getAdminStats: async () => {
+    const response = await apiClient.get('/admin/stats');
+    return response.data;
+  },
+  getAllMetricsAdmin: async () => {
+    const response = await apiClient.get('/metrics/all');
+    return response.data;
+  },
+  addMetric: async (metricData) => {
+    const response = await apiClient.post('/metrics', metricData);
+    return response.data;
+  },
+  toggleMetricStatus: async (metricId) => {
+    const response = await apiClient.put(`/metrics/${metricId}/toggle`);
+    return response.data;
+  },
+  updateMetric: async (metricId, metricData) => {
+    const response = await apiClient.put(`/metrics/${metricId}`, metricData);
+    return response.data;
+  },
 };
